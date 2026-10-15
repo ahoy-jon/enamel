@@ -11,7 +11,7 @@
   node-stroke: 1pt,
   node-corner-radius: 6pt,
   node-inset: 10pt,
-  node((0, 1), align(center)[*System A* \ #text(11pt, fill: blue)[OpenAPI]], name: <a>, stroke: blue),
+  node((0, 1), align(center)[*Specification* \ #text(11pt, fill: blue)[OpenAPI]], name: <a>, stroke: blue),
   node((1, 0), [System B], name: <b>),
   node((1, 2), [System C], name: <c>),
   node((2, 1), align(left)[*Tests* \ #text(11pt)[unit · integration]], name: <tests>, stroke: green),

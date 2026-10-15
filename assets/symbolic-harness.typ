@@ -17,7 +17,7 @@
   node-stroke: 1pt,
   node-corner-radius: 6pt,
   node-inset: 10pt,
-  node((0, 0), align(center)[#sys[System A] \ #text(10pt, fill: blue)[OpenAPI]], name: <a>, stroke: 1pt + blue),
+  node((0, 0), align(center)[#sys[Specification] \ #text(10pt, fill: blue)[OpenAPI]], name: <a>, stroke: 1pt + blue),
   node((0, 1), sys[System B], name: <b>, stroke: 1pt + blue),
   node((0, 2), sys[System C], name: <c>, stroke: 1pt + blue),
   node((2, 0), [Contracts / observations A], name: <contracts-a>),
