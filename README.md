@@ -137,9 +137,7 @@ Copyright 2026 Jonathan Winandy. Enamel is licensed under the [Apache License 2.
 
 ## Acknowledgements
 
-Thanks to [Valentin Bergeron](https://github.com/vbergeron) for his contributions (naming the project, ...), generous technical discussions, and incisive feedback.
-
-Thanks to [Cyril DESCHAMPS](https://github.com/CyrilDesch) for similar contributions, generous technical discussions, and incisive feedback.
+Thanks to [Valentin Bergeron](https://github.com/vbergeron) and [Cyril DESCHAMPS](https://github.com/CyrilDesch) for exploring the approach and its tooling, generous technical discussions, and valuable feedback; Valentin also named the project.
 
 We are grateful to Marcel van Lohuizen and the CUE team, including Paul Jolly and Jonathan Matthews. CUE's design and availability have been foundational to this exploration of symbolic space.
 
