@@ -1,0 +1,13 @@
+# JavaScript dependencies
+node_modules/
+npm-debug.log*
+
+# Deno test and coverage output
+coverage/
+
+# Generated LSP observation (regenerate with `mise run extract`)
+extract.gen.cue
+
+# Local operating-system files
+.DS_Store
+*.tsbuildinfo
