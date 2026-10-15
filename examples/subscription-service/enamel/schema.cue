@@ -1,23 +1,46 @@
 package subscription
 
-// Unification checks that the database currently observed through PostgreSQL's
-// catalog satisfies the schema the program relies on. The program projection is
-// intentionally open: it need not describe unrelated database additions.
-// Enum values are closed by programSchema because an unknown persisted status
-// cannot safely be represented by the domain model.
+import "list"
 
-// Every table observed in PostgreSQL's public schema must carry a creation
-// timestamp. The pattern applies to fields discovered by the database
-// adapter, including tables the program projection does not otherwise name.
-#TablesHaveCreatedAt: {
-	tables: [string]: {
+// Rules evaluate the database observation as data. They do not unify it with a
+// second, exhaustive schema: new tables, columns and constraints remain free.
+schema: {
+	program:  programSchema
+	database: databaseSchema
+
+	checks: {
+		// Every column required by the program must be observed in its table.
 		columns: {
-			created_at: true
-			...
+			for table, requirement in programSchema.tables {
+				for column, _ in requirement.columns {
+					"\(table).\(column)": list.Contains(databaseSchema.tables[table].columns, column) & true
+				}
+			}
 		}
-		...
-	}
-	...
-}
 
-schema: programSchema & databaseSchema & #TablesHaveCreatedAt
+		// Every required persisted constraint must be observed.
+		constraints: {
+			for constraint, _ in programSchema.constraints {
+				"\(constraint)": list.Contains(databaseSchema.constraints, constraint) & true
+			}
+		}
+
+		// Runtime statuses and the PostgreSQL enum must match exactly.
+		statuses: {
+			for status, _ in programSchema.enums.subscription_status.values {
+				"required-\(status)": list.Contains(databaseSchema.enums.subscription_status.values, status) & true
+			}
+			for status in databaseSchema.enums.subscription_status.values {
+				"known-\(status)": programSchema.enums.subscription_status.values[status] == true
+			}
+		}
+
+		// This is a structural convention, independent of the program projection:
+		// it also covers a newly added table that application code does not use yet.
+		creationTimestamps: {
+			for table, observation in databaseSchema.tables {
+				"\(table)": list.Contains(observation.columns, "created_at") & true
+			}
+		}
+	}
+}

@@ -6,8 +6,8 @@ if (!process.env.DATABASE_URL) {
 }
 
 const cue = (value) => JSON.stringify(value);
-const truthMap = (values, indent) =>
-  `close({${[...values].sort().map((value) => `\n${indent}${cue(value)}: true`).join("")}\n${indent.slice(0, -1)}})`;
+const cueList = (values, indent) =>
+  `[${[...values].sort().map((value) => `\n${indent}${cue(value)},`).join("")}\n${indent.slice(0, -1)}]`;
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 try {
@@ -27,15 +27,14 @@ try {
 package subscription
 
 // State observed from PostgreSQL's catalog; no application source is consulted.
-// close keeps the projection observational: CUE cannot supply absent fields.
 databaseSchema: {
-	tables: close({${[...tables].sort(([a], [b]) => a.localeCompare(b)).map(([table, tableColumns]) => `
-		${table}: close({ columns: ${truthMap(tableColumns, "\t\t\t")} })`).join("")}
-	})
-	enums: close({${[...enumValues].sort(([a], [b]) => a.localeCompare(b)).map(([name, values]) => `
-		${name}: close({ values: ${truthMap(values, "\t\t\t")} })`).join("")}
-	})
-	constraints: ${truthMap(constraints.rows.map(({ definition }) => definition), "\t\t")}
+	tables: {${[...tables].sort(([a], [b]) => a.localeCompare(b)).map(([table, tableColumns]) => `
+		${table}: { columns: ${cueList(tableColumns, "\t\t\t")} }`).join("")}
+	}
+	enums: {${[...enumValues].sort(([a], [b]) => a.localeCompare(b)).map(([name, values]) => `
+		${name}: { values: ${cueList(values, "\t\t\t")} }`).join("")}
+	}
+	constraints: ${cueList(constraints.rows.map(({ definition }) => definition), "\t\t")}
 }
 `;
   await writeFile(new URL("../enamel/database-schema.gen.cue", import.meta.url), output);

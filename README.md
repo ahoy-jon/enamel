@@ -1,19 +1,21 @@
 # Enamel
 
-**A shared, inspectable boundary between specifications, systems, and agents.**
+**The minimum necessary beyond CUE to connect a project's evolving semantic model to its real system.**
 
-Enamel helps people and agents change real systems with evidence rather than guesswork. It creates a **translucent** view of a codebase, infrastructure stack, or running service: enough verified structure to steer and validate a change, without pretending to model every implementation detail.
+Enamel provides reusable components for projecting selected technical elements of a real system into CUE, then connecting that project-specific model to people, agents, and validation. For example, a TypeScript component can use the Language Server Protocol (LSP) to inspect source code and project symbols, signatures, imports, and type relationships into CUE.
 
-Instead of choosing between an opaque system and an exhaustive model that will inevitably drift, Enamel makes the relevant boundary explicit:
+Each project decides, ad hoc, what matters: which elements to extract, what a projection preserves, which concepts and relationships to author, and how agents may use the resulting model. Enamel does not prescribe a universal ontology, extraction pipeline, or complete representation of a system.
 
-- **intent:** what the system should do;
-- **observation:** what an adapter can reliably see about it;
-- **constraints:** the rules those observations must satisfy; and
-- **proposals:** changes that can be checked against those rules.
+CUE is the modeling substrate. Enamel closes the loop between CUE and the system it describes:
 
-The result is a common space where specifications, implementations, and agent-generated changes can be compared without treating any one of them as the whole truth.
+1. Projection components extract selected facts from the system and represent them in CUE.
+2. The project combines those facts with authored concepts, constraints, and relationships.
+3. People and agents inspect, reason about, propose, and validate changes against that model.
+4. Changes to the real system are projected again, keeping the model and system in a bounded, inspectable feedback loop.
 
-> Expose enough of a system to steer change with evidence, without pretending to know the whole system.
+The result is a **translucent** view: enough verified structure to steer and validate change, without pretending to model every implementation detail.
+
+> Enamel provides the means; each project defines the semantics.
 
 For the conceptual synthesis and its relationship to knowledge bases, see [Enamel: synthesis](docs/synthesis.md).
 

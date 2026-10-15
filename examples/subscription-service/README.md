@@ -41,9 +41,10 @@ le sont pas. Pour exécuter l'ensemble :
 DATABASE_URL=postgres://app:app@localhost:5432/subscriptions npm run schema:check
 ```
 
-La commande exporte explicitement `schema` après unification. Les projections
-observées sont fermées : une colonne requise mais absente ne peut donc pas être
-ajoutée virtuellement par CUE et fait échouer la commande.
+La commande exporte explicitement `schema` après évaluation des règles. La
+projection de la base reste descriptive et ouverte ; les règles testent la
+présence des éléments observés dans ses listes, de sorte qu'une colonne requise
+mais absente fait échouer la commande sans fermer le schéma.
 
 Cette projection ne déduit ni types SQL, ni nullabilité, ni index, ni sémantique
 des requêtes : elle couvre seulement les colonnes, enums et contraintes que le
