@@ -1,5 +1,5 @@
 {
   "tasks": {
-    "extract": "deno run --allow-read --allow-run --allow-write tools/extract.ts src/greeting.ts src/users.ts"
+    "extract": "deno run --allow-read --allow-run --allow-write tools/extract.ts src/domain/user.ts src/infrastructure/database.ts src/data/userRepository.ts src/application/greetingService.ts src/presentation/greetingHandler.ts"
   }
 }

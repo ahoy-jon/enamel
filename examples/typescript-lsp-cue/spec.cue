@@ -4,14 +4,24 @@ package envelope
 // outside this adapter's observation.
 intent: {
 	functions: {
-		greet: {
-			parameters: close({name: "string"})
+		displayName: {
+			parameters: close({user: "User"})
 			return: "string"
 			async:  false
 		}
 		findUser: {
 			parameters: close({id: "string"})
 			return: "Promise": "User"
+			async: true
+		}
+		greetingForUser: {
+			parameters: close({id: "string"})
+			return: "Promise": "string"
+			async: true
+		}
+		handleGreetingRequest: {
+			parameters: close({id: "string"})
+			return: "Promise": "string"
 			async: true
 		}
 	}

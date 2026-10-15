@@ -18,15 +18,26 @@ npm install
 mise run check
 ```
 
-`mise run check` regenerates the observation and runs `cue vet .`. Change one
-of the observed function signatures in `src/` and validation fails until the
-implementation is repaired or the intended contract is deliberately updated.
+`mise run check` regenerates the observation and runs `cue vet .`. It validates
+both signatures and a layered dependency policy:
+
+```text
+presentation → application → data → infrastructure
+                   ↓          ↓
+                 domain ←─────┘
+```
+
+For example, changing `src/presentation/greetingHandler.ts` to import the
+repository or database directly makes CUE reject the observation. The policy is
+human-owned in `architecture.cue`; the actual local import targets are resolved
+by `textDocument/definition` and emitted in `extract.gen.cue`.
 
 ## Adapter boundary
 
 The adapter requests document symbols and hover signatures for the explicit
 files in `deno.json`. It records function names, parameter names/types, return
-types (with `Promise<T>` represented structurally), and whether the return type
-is `Promise<T>`. It does not establish
-function behavior, runtime effects, overloads, generics, or visibility. The
-small hover parser intentionally makes its supported signature subset explicit.
+types (with `Promise<T>` represented structurally), local module dependencies
+resolved through LSP definitions, and whether the return type is `Promise<T>`.
+It does not establish function behavior, runtime effects, dynamic imports,
+overloads, generics, or visibility. The small hover parser and import discovery
+intentionally make the supported subset explicit.

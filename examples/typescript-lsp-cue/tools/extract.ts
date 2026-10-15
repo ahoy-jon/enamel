@@ -12,6 +12,7 @@ type FunctionShape = {
   returnType: string;
   async: boolean;
 };
+type Location = { uri?: string; targetUri?: string };
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -153,6 +154,48 @@ function flatten(symbols: DocumentSymbol[]): DocumentSymbol[] {
   ) => [symbol, ...flatten(symbol.children ?? [])]);
 }
 
+function positionAt(text: string, offset: number): Position {
+  const before = text.slice(0, offset);
+  const lines = before.split("\n");
+  return { line: lines.length - 1, character: lines.at(-1)?.length ?? 0 };
+}
+
+function localImportSpecifiers(
+  text: string,
+): { specifier: string; offset: number }[] {
+  const matches = text.matchAll(
+    /\bfrom\s+["']([^"']+)["']|\bimport\s+["']([^"']+)["']/g,
+  );
+  return [...matches].flatMap((match) => {
+    const specifier = match[1] ?? match[2];
+    if (!specifier?.startsWith(".")) return [];
+    // The first captured string is the local module identifier used as the
+    // definition request position; TypeScript resolves it semantically.
+    return [{ specifier, offset: match.index + match[0].indexOf(specifier) }];
+  });
+}
+
+function relativeFile(uri: string, root: string): string {
+  const path = decodeURIComponent(new URL(uri).pathname);
+  const prefix = `${root}/`;
+  if (!path.startsWith(prefix)) {
+    throw new Error(`Dependency outside workspace: ${uri}`);
+  }
+  return path.slice(prefix.length);
+}
+
+function definitionUri(result: unknown): string {
+  const locations = Array.isArray(result) ? result : [result];
+  const location = locations[0] as Location | null;
+  const uri = location?.targetUri ?? location?.uri;
+  if (!uri) {
+    throw new Error(
+      `Could not resolve local import: ${JSON.stringify(result)}`,
+    );
+  }
+  return uri;
+}
+
 const files = Deno.args;
 if (!files.length) {
   throw new Error("Usage: extract.ts <TypeScript source files...>");
@@ -172,12 +215,23 @@ try {
   });
   await lsp.notify("initialized", {});
   const functions: Record<string, FunctionShape> = {};
+  const modules: Record<string, { imports: string[] }> = {};
   for (const file of files.sort()) {
     const uri = `file://${root}/${file}`;
     const text = await Deno.readTextFile(file);
     await lsp.notify("textDocument/didOpen", {
       textDocument: { uri, languageId: "typescript", version: 1, text },
     });
+    const imports = await Promise.all(
+      localImportSpecifiers(text).map(async ({ specifier, offset }) => {
+        const definition = await lsp.request("textDocument/definition", {
+          textDocument: { uri },
+          position: positionAt(text, offset),
+        });
+        return relativeFile(definitionUri(definition), root);
+      }),
+    );
+    modules[file] = { imports: [...new Set(imports)].sort() };
     const symbols = await lsp.request("textDocument/documentSymbol", {
       textDocument: { uri },
     }) as DocumentSymbol[];
@@ -221,6 +275,18 @@ try {
         : `\t\t\treturn: ${JSON.stringify(fn.returnType)}`,
       `\t\t\tasync: ${fn.async}`,
       "\t\t}",
+    );
+  }
+  lines.push("\t}", "\tmodules: {");
+  for (
+    const [file, module] of Object.entries(modules).sort(([a], [b]) =>
+      a.localeCompare(b)
+    )
+  ) {
+    lines.push(
+      `\t\t${JSON.stringify(file)}: {imports: [${
+        module.imports.map(JSON.stringify).join(", ")
+      }]}`,
     );
   }
   lines.push("\t}", "}", "");
