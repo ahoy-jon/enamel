@@ -5,8 +5,8 @@ const root = new URL("..", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 const cue = (value) => JSON.stringify(value);
 
-const columnMap = (columns) =>
-  `{${[...columns].sort().map((column) => `\n\t\t\t${column}: true`).join("")}\n\t\t}`;
+const cueList = (values, indent) =>
+  `[${[...values].sort().map((value) => `\n${indent}${cue(value)},`).join("")}\n${indent.slice(0, -1)}]`;
 
 const main = async () => {
   const [contract, domain] = await Promise.all([
@@ -31,17 +31,15 @@ package subscription
 // The database shape the running program currently relies on.
 programSchema: {
 	tables: {${tables.sort((a, b) => a.name.localeCompare(b.name)).map((table) => `
-		${table.name}: { columns: ${columnMap(table.columns)} }`).join("")}
+		${table.name}: { columns: ${cueList(table.columns, "\t\t\t")} }`).join("")}
 	}
 	enums: {
 		subscription_status: {
 			// Statuses are exact: an unrecognised persisted state is unsafe.
-			values: close(${columnMap(statuses)})
+			values: ${cueList(statuses, "\t\t\t\t")}
 		}
 	}
-	constraints: {${constraints.sort().map((constraint) => `
-		${cue(constraint)}: true`).join("")}
-	}
+	constraints: ${cueList(constraints, "\t\t")}
 }
 `;
   await writeFile(new URL("enamel/program-schema.gen.cue", root), output);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SubscriptionService } from "../src/application/subscription-service.js";
-import type { CreateSubscription, SubscriptionRepository } from "../src/application/ports.js";
+import type { CreateSubscription, OutboxEvent, SubscriptionRepository } from "../src/application/ports.js";
 import type { Subscription, SubscriptionStatus } from "../src/domain/subscription.js";
 
 class MemoryRepository implements SubscriptionRepository {
@@ -13,14 +13,14 @@ class MemoryRepository implements SubscriptionRepository {
     return subscription;
   }
   async find(id: string) { return this.subscriptions.get(id) ?? null; }
-  async changeStatus(id: string, status: SubscriptionStatus, gracePeriodEndsAt: Date | null) {
+  async changeStatusAndRecordEvent(id: string, status: SubscriptionStatus, gracePeriodEndsAt: Date | null, event: OutboxEvent) {
     const current = this.subscriptions.get(id)!;
     const next = { ...current, status, gracePeriodEndsAt };
     this.subscriptions.set(id, next);
+    this.events.push(event);
     return next;
   }
   async reserveRenewal(id: string, period: string) { const key = `${id}:${period}`; if (this.renewals.has(key)) return false; this.renewals.add(key); return true; }
-  async recordEvent(topic: string, payload: object) { this.events.push({ topic, payload }); }
 }
 
 describe("subscription invariants", () => {

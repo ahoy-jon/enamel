@@ -21,6 +21,7 @@ service: {
 		"Create requests are idempotent by Idempotency-Key.",
 	]
 	decision: "PostgreSQL transaction + outbox, not a distributed transaction"
+	architecture: systemArchitecture
 	evidence: [
 		"tests/subscription-service.test.ts",
 		"tests/integration/postgres-invariants.test.ts observes the migrated database",

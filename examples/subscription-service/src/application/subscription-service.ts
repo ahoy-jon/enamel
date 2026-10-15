@@ -12,17 +12,19 @@ export class SubscriptionService {
   async cancel(id: string): Promise<Subscription> {
     const subscription = await this.required(id);
     const next = transition(subscription, "CANCELLED");
-    const saved = await this.repository.changeStatus(id, next.status, next.gracePeriodEndsAt);
-    await this.repository.recordEvent("subscription.cancelled", { subscriptionId: id });
-    return saved;
+    return this.repository.changeStatusAndRecordEvent(id, next.status, next.gracePeriodEndsAt, {
+      topic: "subscription.cancelled",
+      payload: { subscriptionId: id },
+    });
   }
 
   async paymentFailed(id: string, now = new Date()): Promise<Subscription> {
     const subscription = await this.required(id);
     const next = markPastDue(subscription, now);
-    const saved = await this.repository.changeStatus(id, next.status, next.gracePeriodEndsAt);
-    await this.repository.recordEvent("subscription.past_due", { subscriptionId: id, gracePeriodEndsAt: next.gracePeriodEndsAt });
-    return saved;
+    return this.repository.changeStatusAndRecordEvent(id, next.status, next.gracePeriodEndsAt, {
+      topic: "subscription.past_due",
+      payload: { subscriptionId: id, gracePeriodEndsAt: next.gracePeriodEndsAt },
+    });
   }
 
   // The database uniqueness constraint is the authoritative double-charge guard.

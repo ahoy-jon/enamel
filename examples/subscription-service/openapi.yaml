@@ -27,12 +27,35 @@ paths:
   /subscriptions/{id}/cancel:
     post:
       summary: Cancel a subscription
+      parameters:
+        - $ref: "#/components/parameters/SubscriptionId"
       responses:
         "200": { description: Subscription cancelled }
         "409": { description: Forbidden state transition }
   /subscriptions/{id}/payment-failed:
     post:
       summary: Record the final failed payment attempt and start the grace period
+      parameters:
+        - $ref: "#/components/parameters/SubscriptionId"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                occurredAt:
+                  type: string
+                  format: date-time
       responses:
         "200": { description: Subscription is PAST_DUE }
+        "400": { description: Invalid occurredAt value }
         "409": { description: Forbidden state transition }
+components:
+  parameters:
+    SubscriptionId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string

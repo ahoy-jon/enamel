@@ -40,6 +40,7 @@ describe("PostgreSQL evidence", () => {
     ]);
 
     expect(replay.id).toBe(first.id);
+    expect(replay.currentPeriodEndsAt).toBeInstanceOf(Date);
     const count = await pool.query<{ count: string }>("SELECT count(*) FROM subscriptions");
     expect(count.rows[0].count).toBe("1");
   });

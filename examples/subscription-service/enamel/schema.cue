@@ -12,7 +12,7 @@ schema: {
 		// Every column required by the program must be observed in its table.
 		columns: {
 			for table, requirement in programSchema.tables {
-				for column, _ in requirement.columns {
+				for column in requirement.columns {
 					"\(table).\(column)": list.Contains(databaseSchema.tables[table].columns, column) & true
 				}
 			}
@@ -20,18 +20,18 @@ schema: {
 
 		// Every required persisted constraint must be observed.
 		constraints: {
-			for constraint, _ in programSchema.constraints {
+			for constraint in programSchema.constraints {
 				"\(constraint)": list.Contains(databaseSchema.constraints, constraint) & true
 			}
 		}
 
 		// Runtime statuses and the PostgreSQL enum must match exactly.
 		statuses: {
-			for status, _ in programSchema.enums.subscription_status.values {
+			for status in programSchema.enums.subscription_status.values {
 				"required-\(status)": list.Contains(databaseSchema.enums.subscription_status.values, status) & true
 			}
 			for status in databaseSchema.enums.subscription_status.values {
-				"known-\(status)": programSchema.enums.subscription_status.values[status] == true
+				"known-\(status)": list.Contains(programSchema.enums.subscription_status.values, status) & true
 			}
 		}
 

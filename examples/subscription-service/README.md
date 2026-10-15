@@ -41,6 +41,19 @@ le sont pas. Pour exécuter l'ensemble :
 DATABASE_URL=postgres://app:app@localhost:5432/subscriptions npm run schema:check
 ```
 
+La base ciblée est volontairement externe au programme : elle peut contenir
+des colonnes, contraintes ou tables supplémentaires. `schema:check` vérifie
+que les éléments dont le programme dépend sont présents, sans fermer le schéma
+observé.
+
+Pour vérifier cette tolérance sans base locale, la commande suivante démarre
+un PostgreSQL éphémère avec Testcontainers, applique la migration puis y ajoute
+une colonne et une table `audit_log` avant la validation :
+
+```sh
+npm run schema:check:test
+```
+
 La commande exporte explicitement `schema` après évaluation des règles. La
 projection de la base reste descriptive et ouverte ; les règles testent la
 présence des éléments observés dans ses listes, de sorte qu'une colonne requise
@@ -59,11 +72,10 @@ Il n'y a pas de base locale à préparer ni de `docker compose up` à lancer :
 npm run test:integration
 ```
 
-`npm run evidence` exécute les tests unitaires puis cette preuve PostgreSQL.
-Testcontainers nécessite toujours un daemon Docker fonctionnel ; le problème
-actuel de version API Docker doit donc être résolu avant d'exécuter ce test.
-Docker Compose reste disponible uniquement pour explorer l'API et le worker
-NATS manuellement.
+`npm run evidence` exécute les tests unitaires, la vérification CUE sur cette
+base volontairement enrichie, puis les preuves PostgreSQL. Testcontainers
+nécessite un daemon Docker fonctionnel. Docker Compose reste disponible
+uniquement pour explorer l'API et le worker NATS manuellement.
 
 Créer un abonnement :
 
@@ -80,6 +92,7 @@ curl -X POST localhost:3000/subscriptions \
 | --- | --- |
 | `openapi.yaml` | Contrat HTTP observable. |
 | `enamel/service.cue` | Spécification, dépendances, SLO, invariants et preuves possédées par l'humain. |
+| `enamel/architecture.cue` | Architecture possédée par l'humain : composants, frontières transactionnelles et sémantique de livraison. |
 | `enamel/schema.cue` | Règle CUE qui unifie le schéma demandé par le programme et celui observé dans PostgreSQL, et impose `created_at` à chaque table observée. |
 | `enamel/*-schema.gen.cue` | Projections CUE générées du contrat du programme et du catalogue PostgreSQL. |
 | `tools/extract-program-schema.mjs` / `tools/dump-database-schema.mjs` | Adaptateurs de ces deux projections indépendantes. |
@@ -100,12 +113,13 @@ curl -X POST localhost:3000/subscriptions \
    l'abonnement à `PAST_DUE` avec une échéance de grâce à J+7. Dans un système
    réel, l'adaptateur de paiement n'appelle cette opération qu'après ses trois
    tentatives configurées.
-4. **Événements fiables.** Chaque changement écrit un événement dans l'outbox.
-   Le worker le publie sur NATS et le marque publié dans la même transaction de
-   lecture/verrouillage.
+4. **Événements fiables.** Chaque mutation d'état et l'insertion de son événement
+   dans l'outbox sont validées dans la même transaction PostgreSQL. Le worker le
+   publie ensuite sur NATS et le marque publié dans sa transaction de lecture/verrouillage.
 
-L'outbox garantit au moins une fois : les consommateurs NATS doivent donc eux
-aussi être idempotents. Elle ne prétend pas fournir un exactly-once global.
+L'outbox garantit au moins une fois : chaque message NATS contient `event.id`,
+que les consommateurs utilisent pour dédupliquer. Elle ne prétend pas fournir
+un exactly-once global.
 
 ### Règles entre code et base de données
 

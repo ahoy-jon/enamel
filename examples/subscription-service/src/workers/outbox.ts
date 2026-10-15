@@ -9,10 +9,10 @@ async function publishBatch() {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    // SKIP LOCKED permits several workers without publishing an event twice.
+    // SKIP LOCKED permits concurrent workers; delivery remains at least once.
     const events = await client.query<Event>("SELECT id, topic, payload FROM outbox WHERE published_at IS NULL ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 100");
     for (const event of events.rows) {
-      nats.publish(event.topic, new TextEncoder().encode(JSON.stringify(event.payload)));
+      nats.publish(event.topic, new TextEncoder().encode(JSON.stringify({ id: event.id, payload: event.payload })));
       await nats.flush();
       await client.query("UPDATE outbox SET published_at = now() WHERE id = $1", [event.id]);
     }

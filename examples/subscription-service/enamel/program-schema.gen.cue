@@ -5,50 +5,50 @@ package subscription
 // The database shape the running program currently relies on.
 programSchema: {
 	tables: {
-		idempotency_keys: { columns: {
-			created_at: true
-			key: true
-			response: true
-		} }
-		outbox: { columns: {
-			created_at: true
-			id: true
-			payload: true
-			published_at: true
-			topic: true
-		} }
-		renewal_attempts: { columns: {
-			billing_period: true
-			created_at: true
-			status: true
-			subscription_id: true
-		} }
-		subscriptions: { columns: {
-			created_at: true
-			current_period_ends_at: true
-			customer_id: true
-			grace_period_ends_at: true
-			id: true
-			plan_id: true
-			status: true
-			updated_at: true
-		} }
+		idempotency_keys: { columns: [
+			"created_at",
+			"key",
+			"response",
+		] }
+		outbox: { columns: [
+			"created_at",
+			"id",
+			"payload",
+			"published_at",
+			"topic",
+		] }
+		renewal_attempts: { columns: [
+			"billing_period",
+			"created_at",
+			"status",
+			"subscription_id",
+		] }
+		subscriptions: { columns: [
+			"created_at",
+			"current_period_ends_at",
+			"customer_id",
+			"grace_period_ends_at",
+			"id",
+			"plan_id",
+			"status",
+			"updated_at",
+		] }
 	}
 	enums: {
 		subscription_status: {
 			// Statuses are exact: an unrecognised persisted state is unsafe.
-			values: close({
-			ACTIVE: true
-			CANCELLED: true
-			EXPIRED: true
-			PAST_DUE: true
-		})
+			values: [
+				"ACTIVE",
+				"CANCELLED",
+				"EXPIRED",
+				"PAST_DUE",
+			]
 		}
 	}
-	constraints: {
-		"FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)": true
-		"PRIMARY KEY (id)": true
-		"PRIMARY KEY (key)": true
-		"PRIMARY KEY (subscription_id, billing_period)": true
-	}
+	constraints: [
+		"FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)",
+		"PRIMARY KEY (id)",
+		"PRIMARY KEY (key)",
+		"PRIMARY KEY (subscription_id, billing_period)",
+	]
 }

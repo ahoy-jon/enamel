@@ -9,9 +9,10 @@
     "schema:program": "node tools/extract-program-schema.mjs",
     "schema:database": "node tools/dump-database-schema.mjs",
     "schema:check": "npm run schema:program && npm run schema:database && cue export -e schema ./enamel > /dev/null",
+    "schema:check:test": "node tools/check-schema-with-test-database.mjs",
     "test": "vitest run --config vitest.unit.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "evidence": "npm run check && npm run test:integration",
+    "evidence": "npm run check && npm run schema:check:test && npm run test:integration",
     "check": "npm run build && npm test"
   },
   "dependencies": {
@@ -25,6 +26,7 @@
     "@types/pg": "^8.11.10",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
   }
 }
