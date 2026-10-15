@@ -13,6 +13,8 @@ export class PostgresSubscriptionRepository implements SubscriptionRepository {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
+      // Serialise concurrent retries for this key before checking the cached response.
+      await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [key]);
       const cached = await client.query<{ response: Subscription }>("SELECT response FROM idempotency_keys WHERE key = $1", [key]);
       if (cached.rowCount) { await client.query("COMMIT"); return cached.rows[0].response; }
       const id = randomUUID();

@@ -1,0 +1,38 @@
+openapi: 3.1.0
+info:
+  title: Subscription Service
+  version: 0.1.0
+paths:
+  /subscriptions:
+    post:
+      summary: Create a subscription idempotently
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId, planId]
+              properties:
+                customerId: { type: string }
+                planId: { type: string }
+      responses:
+        "201": { description: Subscription created or replayed }
+        "400": { description: Invalid request }
+  /subscriptions/{id}/cancel:
+    post:
+      summary: Cancel a subscription
+      responses:
+        "200": { description: Subscription cancelled }
+        "409": { description: Forbidden state transition }
+  /subscriptions/{id}/payment-failed:
+    post:
+      summary: Record the final failed payment attempt and start the grace period
+      responses:
+        "200": { description: Subscription is PAST_DUE }
+        "409": { description: Forbidden state transition }

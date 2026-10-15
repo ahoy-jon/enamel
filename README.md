@@ -106,6 +106,11 @@ In Enamel, this loop is bounded by the symbolic envelope. A repair is accepted b
 TypeScript example. It queries `typescript-language-server` over LSP, generates
 a CUE observation, and unifies it with human-owned specifications and rules.
 
+[`examples/subscription-service`](examples/subscription-service) is a runnable
+TypeScript, PostgreSQL, Docker and NATS service example. Its CUE envelope makes
+service contracts, invariants, dependencies and evidence inspectable alongside
+the implementation.
+
 ## Intellectual context
 
 Enamel began with the joking ambition to “do that again in Clojure and Specter, for once,” drawing on the idea of a Data Engineering Exoskeleton. It has since evolved into a simplified expression of the core mechanics of design convergence.
