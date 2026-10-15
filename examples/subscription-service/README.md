@@ -20,6 +20,36 @@ npm run check
 npm run dev
 ```
 
+## Projection CUE du schéma
+
+La vérification de schéma confronte deux projections indépendantes :
+
+- `npm run schema:program` lit le contrat de persistance et les états de domaine
+  du programme, puis écrit `enamel/program-schema.gen.cue` ;
+- `DATABASE_URL=postgres://… npm run schema:database` interroge le catalogue
+  PostgreSQL et écrit `enamel/database-schema.gen.cue`.
+
+`enamel/schema.cue` les unifie. Ainsi, une colonne ou contrainte exigée par le
+programme doit exister dans la base observée et les valeurs de
+`subscription_status` doivent correspondre exactement. Toute table observée
+dans le schéma PostgreSQL `public`, y compris une table non décrite par le
+programme, doit aussi avoir une colonne `created_at`. Les contraintes et
+colonnes supplémentaires restent autorisées ; les valeurs d'enum inconnues ne
+le sont pas. Pour exécuter l'ensemble :
+
+```sh
+DATABASE_URL=postgres://app:app@localhost:5432/subscriptions npm run schema:check
+```
+
+La commande exporte explicitement `schema` après unification. Les projections
+observées sont fermées : une colonne requise mais absente ne peut donc pas être
+ajoutée virtuellement par CUE et fait échouer la commande.
+
+Cette projection ne déduit ni types SQL, ni nullabilité, ni index, ni sémantique
+des requêtes : elle couvre seulement les colonnes, enums et contraintes que le
+contrat du programme expose aujourd'hui, ainsi que la convention structurelle
+`created_at` sur les tables observées.
+
 Les preuves d'intégration sont automatisées avec Testcontainers : le test crée
 un PostgreSQL vierge, applique la migration, puis détruit le conteneur à la fin.
 Il n'y a pas de base locale à préparer ni de `docker compose up` à lancer :
@@ -49,6 +79,9 @@ curl -X POST localhost:3000/subscriptions \
 | --- | --- |
 | `openapi.yaml` | Contrat HTTP observable. |
 | `enamel/service.cue` | Spécification, dépendances, SLO, invariants et preuves possédées par l'humain. |
+| `enamel/schema.cue` | Règle CUE qui unifie le schéma demandé par le programme et celui observé dans PostgreSQL, et impose `created_at` à chaque table observée. |
+| `enamel/*-schema.gen.cue` | Projections CUE générées du contrat du programme et du catalogue PostgreSQL. |
+| `tools/extract-program-schema.mjs` / `tools/dump-database-schema.mjs` | Adaptateurs de ces deux projections indépendantes. |
 | `src/infrastructure/observe-postgres.ts` | Adaptateur qui observe les tables, enum et contraintes réellement migrées. |
 | `src/enamel/database-contract.ts` | Règles entre les états du domaine et la persistance observée. |
 | `src/domain/subscription.ts` | Machine à états : `ACTIVE → PAST_DUE → EXPIRED` ou `ACTIVE → CANCELLED`. |
@@ -84,6 +117,11 @@ PostgreSQL. Le contrat vérifie alors que :
 - les colonnes persistées attendues existent ;
 - les clés primaires et la clé étrangère qui garantissent idempotence et
   intégrité référentielle sont réellement présentes.
+
+Lors de `npm run schema:check`, CUE applique en plus une règle de structure à
+toutes les tables du schéma `public` : chacune doit posséder `created_at`.
+Une migration qui ajoute une table sans cette colonne échoue donc même si le
+code applicatif ne l'utilise pas encore.
 
 Par exemple, ajouter `REFUND_PENDING` au domaine sans migration PostgreSQL fait
 échouer `npm run test:integration`. À l'inverse, une migration qui retire la
