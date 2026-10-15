@@ -1,109 +1,106 @@
 # Enamel
 
-**Reconciling specs, code, and agents.**
+**A shared, inspectable boundary between specifications, systems, and agents.**
 
-Enamel is a translucent interface between real systems and agentic generation. It makes systems legible enough for agents to safely propose changes without requiring a complete model of their implementation.
+Enamel helps people and agents change real systems with evidence rather than guesswork. It creates a **translucent** view of a codebase, infrastructure stack, or running service: enough verified structure to steer and validate a change, without pretending to model every implementation detail.
 
-Rather than treating a codebase, infrastructure stack, or running service as either fully opaque or exhaustively modeled, Enamel exposes a **translucent** view: the selected properties that matter for steering, validating, and converging changes, while irrelevant detail remains opaque.
+Instead of choosing between an opaque system and an exhaustive model that will inevitably drift, Enamel makes the relevant boundary explicit:
+
+- **intent** — what the system should do;
+- **observation** — what an adapter can reliably see about it;
+- **constraints** — the rules those observations must satisfy; and
+- **proposals** — changes that can be checked against those rules.
+
+The result is a common space where specifications, implementations, and agent-generated changes can be compared without treating any one of them as the whole truth.
+
+> Expose enough of a system to steer change with evidence, without pretending to know the whole system.
 
 ## Why translucency?
 
-Agentic generation needs reliable context, but complete representations of real systems are expensive to build, quickly become stale, and still fail to capture everything that matters.
+Agents need dependable context, but complete representations of real systems are costly to construct, quickly become stale, and still miss important behavior. Partial context alone is not sufficient either: without clear meaning and limits, it can create false confidence.
 
-Partial information alone is not enough. A translucent interface deliberately states:
+A translucent interface states what it observes, what those observations mean, which constraints they can support, and what remains unknown. This makes uncertainty inspectable. It also helps reconcile the three views that commonly drift apart: the intended specification, the observable state of the system, and the changes proposed by agents.
 
-- what it observes;
-- what those observations mean;
-- which constraints they support; and
-- what it cannot claim.
+## How it works
 
-This makes uncertainty explicit rather than hiding it behind a supposedly complete model. Enamel reconciles three views that otherwise drift apart: the intended specification, the observable code and system state, and the changes proposed by agents.
-
-## Workflow
-
-### 1. Direct dependency workflow
+### 1. Direct dependencies make evolution brittle
 
 ![Legacy workflow: systems depend directly on each other's definitions.](assets/build/composition.svg)
 
-In the direct model, System A is the OpenAPI definition that drives Systems B and C. Tests describe some of that relationship, but there is no independent space in which to evaluate the composition. This makes independent evolution difficult.
+In a direct model, an interface definition such as OpenAPI drives downstream systems. Tests capture part of the relationship, but there is no independent representation in which to evaluate the whole composition. Changing one system therefore tends to tightly constrain the others.
 
-### 2. Symbolic envelope
+### 2. A symbolic envelope provides a shared boundary
 
 ![Symbolic harness: systems are transformed into observations and unified with rules for deterministic validation.](assets/build/symbolic-harness.svg)
 
-Enamel adds a symbolic envelope. Each system is transformed into contracts and observations, which are unified with shared rules. Systems B and C can evolve independently as long as their observed representations continue to satisfy the envelope derived from System A. Agents propose changes against that same envelope instead of treating the specification or implementation as the sole source of truth.
+Enamel introduces a **symbolic envelope**: adapters transform each system into contracts and observations, then shared rules unify those representations. Downstream systems may evolve independently when their observations continue to satisfy the envelope. Agents work against that same boundary rather than relying on either the specification or implementation alone.
 
-### 3. Convergence loop
+### 3. Change converges through a bounded loop
 
 ![Convergence loop: observe, constrain, decide, remediate, and re-observe.](assets/build/workflow.svg)
 
-Adapters can draw on source analysis, schemas, compiler APIs, LSP, runtime introspection, or traces. For a system that has not changed, its adapter should produce the same canonical observation. No single extraction mechanism is assumed to be universal.
+1. **Observe** the system through an adapter.
+2. **Compare** that observation with the intended constraints.
+3. **Decide** whether the discrepancy is acceptable, requires a governed constraint change, or needs remediation.
+4. **Propose and validate** a targeted change.
+5. **Observe again** until the constraints are satisfied or the process reaches its explicit limit.
 
-The diagram source is [`assets/workflow.typ`](assets/workflow.typ). Render it with:
+Adapters may use source analysis, schemas, compiler APIs, language servers, runtime introspection, or traces. There is no universal extraction mechanism. For unchanged input, an adapter should produce the same canonical observation.
+
+## Design principles
+
+### Adapters have explicit contracts
+
+An adapter extracts an observable specification from a system. Its contract defines what it represents faithfully, what it omits, and which guarantees its output can support.
+
+### Validation is deterministic
+
+Generation may be probabilistic; validation must not be. Enamel represents expectations as composable constraints so a proposal can be checked against an explicit contract.
+
+### Convergence is iterative
+
+Complex systems rarely yield to a single generation step. Enamel identifies a discrepancy, proposes a focused remediation, then re-observes and re-validates the resulting system.
+
+### Constraint changes are governed
+
+Adding a constraint narrows the set of accepted configurations; removing or relaxing one expands it. Those are distinct operations. An agent must not silently weaken the contract merely to eliminate a failure.
+
+## What Enamel can—and cannot—establish
+
+Enamel keeps three separate questions separate:
+
+1. **Extraction fidelity** — Does an adapter observe the properties it claims to observe?
+2. **Validation composability** — Do the declared constraints combine predictably?
+3. **Generation feasibility** — Can a proposed change bring the system into conformance without violating existing invariants?
+
+Answers depend on the system and its adapter. A structurally valid observation is not proof of behavioral correctness, safe execution, or successful convergence.
+
+Enamel is not a complete model of every system, a claim that an LLM can determine correctness unaided, a replacement for domain-specific tests and review, or a universal extractor based on one protocol or language service.
+
+## Example: coinductive repair
+
+[Coinductive Repair](https://github.com/stratorys/coinductive-repair) illustrates the remediation pattern Enamel supports: validate a candidate system, identify a discrepancy, apply a targeted repair, and validate again until the composition reaches a stable state.
+
+In Enamel, this loop is bounded by the symbolic envelope. A repair is accepted because the resulting observations satisfy shared constraints—not simply because it removes a local error.
+
+## Intellectual context
+
+Enamel is aligned with Peter Naur’s *Programming as Theory Building*: meaningful understanding must remain available as a system evolves. It proposes a technical complement rather than a replacement for human understanding—a semantic harness that exposes relevant structure without prescribing implementation.
+
+It also explores questions raised by Harvard’s [Future of Programming](https://future.metareflection.club/syllabus.html) seminar: how to express intent to computers, collaborate with AI, and retain justified trust in systems shaped by AI. Enamel is one possible technical approach, not a general solution.
+
+## Diagrams
+
+The diagram sources live in [`assets/`](assets/). Rebuild them with:
 
 ```sh
 mise install
 mise run build-assets
 ```
 
-## Core ideas
+## Status
 
-### Adapters have explicit contracts
-
-An adapter extracts an observable specification from a system. Its contract defines the scope of that observation: what is faithfully represented, what is omitted, and the guarantees the resulting specification can support.
-
-### Constraints are deterministic
-
-Generated changes may be probabilistic; validation must not be. Enamel represents expectations as composable constraints so proposed changes can be checked against an explicit contract.
-
-### Convergence is iterative
-
-Enamel compares an observed specification with an intended one, identifies the discrepancy, proposes a targeted change, then observes and validates again. It does not assume a single generation step can correctly transform a complex system.
-
-### Constraint changes are governed
-
-Adding a constraint narrows the configurations that are accepted. Removing or relaxing one expands them. Enamel treats those as different operations: no agent should silently weaken a validation contract merely to make a failure disappear.
-
-## Guarantees, kept separate
-
-Enamel distinguishes three questions that are often conflated:
-
-1. **Extraction fidelity:** does an adapter observe the properties it says it observes?
-2. **Validation composability:** do the declared constraints combine predictably?
-3. **Generation feasibility:** can a proposed modification actually make the system conform without violating its existing invariants?
-
-The answer depends on the adapter and system. A valid structural representation does not, by itself, prove behavioural correctness, safe execution, or successful convergence.
-
-## Non-goals
-
-Enamel is not:
-
-- a claim to completely model every system;
-- an assertion that an LLM can decide correctness on its own;
-- a replacement for domain-specific tests, review, or operational controls; or
-- a universal extractor built from one protocol or language service.
-
-## Programming as Theory Building
-
-Enamel is conceptually aligned with Peter Naur's *Programming as Theory Building*: semantic understanding should be available to guide the evolution of a system.
-
-Naur describes the central role of human understanding in programming. Enamel proposes a technical complement: a translucent semantic harness that exposes the relevant structure of a system without necessarily prescribing its implementation. It gives agents and people a shared, inspectable space in which to evaluate proposed changes.
-
-This alignment is not evidence that Enamel solves the problem Naur identifies. Its value depends on whether an adapter and its harness preserve enough meaning to support coherent generation and subsequent modification.
-
-## Future of programming
-
-Enamel also sits within a broader question: if agents can generate or modify substantial parts of a system, how do people retain agency, understanding, and justified trust in the result?
-
-Its answer is not to require agents to reconstruct the entire system. Instead, it makes the intent, observed structure, and validation boundary explicit and inspectable. This creates a place where people and agents can negotiate a change using shared constraints, then test whether the resulting composition is coherent.
-
-This connects Enamel to the themes of Harvard's [Future of Programming](https://future.metareflection.club/syllabus.html) seminar: expressing intent to computers, human-AI collaboration, and maintaining trust in systems shaped by AI. Enamel is one possible technical exploration of those questions, not a general solution to them.
-
-## Example: coinductive repair
-
-[Coinductive Repair](https://github.com/stratorys/coinductive-repair) is a useful example of the remediation pattern that Enamel supports: validate a candidate system, identify a discrepancy, apply a targeted repair, then validate again until the composition reaches a stable state.
-
-In Enamel, this loop is bounded by the symbolic envelope. A repair is accepted because the resulting observations satisfy the shared constraints, not merely because it removes a local error.
+Enamel is a design-stage project. This repository will develop the shared model, adapter contracts, constraint representation, and convergence workflow described here.
 
 ## References
 
@@ -111,13 +108,5 @@ In Enamel, this loop is bounded by the symbolic envelope. A repair is accepted b
 - [Meta-Reflection Club](https://future.metareflection.club/)
   - [Syllabus](https://future.metareflection.club/syllabus.html)
   - [Schedule](https://future.metareflection.club/schedule.html)
-  - Peter Naur, [*Programming as Theory Building*](https://doi.org/10.1093/comjnl/28.3.253), *The Computer Journal*, 1985
+- Peter Naur, [*Programming as Theory Building*](https://doi.org/10.1093/comjnl/28.3.253), *The Computer Journal*, 1985
 - [Coinductive Repair](https://github.com/stratorys/coinductive-repair)
-
-## Status
-
-Enamel is currently a design-stage project. This repository will evolve into the shared model, adapter contracts, constraint representation, and convergence workflow described above.
-
-## Guiding principle
-
-> Expose enough of a system to steer change with evidence without pretending to know the whole system.
