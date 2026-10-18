@@ -1,0 +1,45 @@
+services:
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/subscriptions
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  outbox-worker:
+    build: .
+    command: ["node", "dist/workers/outbox.js"]
+    environment:
+      DATABASE_URL: postgres://app:app@postgres:5432/subscriptions
+      NATS_URL: nats://nats:4222
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: subscriptions
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    volumes:
+      - ./migrations/001_initial.sql:/docker-entrypoint-initdb.d/001_initial.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d subscriptions"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  nats:
+    image: nats:2-alpine
+    command: ["-js"]
+    ports:
+      - "4222:4222"

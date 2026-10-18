@@ -1,0 +1,20 @@
+[tools]
+deno = "2.2.5"
+node = "22.14.0"
+"aqua:cue-lang/cue" = "0.13.0"
+
+[tasks.extract]
+description = "Observe TypeScript functions through typescript-language-server"
+run = """
+deno task extract
+cue fmt extract.gen.cue
+"""
+
+[tasks.validate]
+description = "Unify the intended contract, observation, and rules"
+depends = ["extract"]
+run = "cue vet ."
+
+[tasks.check]
+description = "Regenerate the observation and validate the envelope"
+depends = ["validate"]

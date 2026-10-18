@@ -1,0 +1,12 @@
+[tools]
+"aqua:typst/typst" = "latest"
+
+[tasks.build-assets]
+description = "Render the Typst diagrams used by the README"
+run = """
+mkdir -p assets/build
+typst compile --format svg assets/composition.typ assets/build/composition.svg
+typst compile --format svg assets/symbolic-harness.typ assets/build/symbolic-harness.svg
+typst compile --format svg assets/workflow.typ assets/build/workflow.svg
+typst compile --format svg assets/adjunctions.typ assets/build/adjunctions.svg
+"""
