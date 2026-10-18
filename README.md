@@ -1,6 +1,6 @@
 # Enamel
 
-**The minimum necessary beyond CUE to connect a project's evolving semantic model to its real system.**
+**Translucent harness for structural integrity**
 
 Enamel provides reusable components for projecting selected technical elements of a real system into CUE, then connecting that project-specific model to people, agents, and validation. For example, a TypeScript component can use the Language Server Protocol (LSP) to inspect source code and project symbols, signatures, imports, and type relationships into CUE.
 
@@ -119,8 +119,6 @@ Enamel began with the joking ambition to “do that again in Clojure and Specter
 
 Enamel seems to be aligned with Peter Naur’s *Programming as Theory Building*: meaningful understanding must remain available as a system evolves. It proposes a technical complement rather than a replacement for human understanding: a semantic harness that exposes relevant structure without prescribing implementation.
 
-It also seems aligned with questions explored by Harvard’s [Future of Programming](https://future.metareflection.club/syllabus.html) seminar: how to express intent to computers, collaborate with AI, and retain justified trust in systems shaped by AI. Enamel is one possible technical approach, not a general solution.
-
 Patrick and Radhia Cousot’s work on *Abstract Interpretation* provides another useful framing: complex program behavior can be analyzed through a deliberately simplified semantic representation. Enamel similarly works with a partial representation, but makes the limits of that representation part of its contract.
 
 Frederick P. Brooks Jr.’s *No Silver Bullet* is an important caution. Abstractions and tools cannot eliminate the essential complexity of software; a symbolic envelope must not claim to capture the entire system.
@@ -152,9 +150,6 @@ We are grateful to Marcel van Lohuizen and the CUE team, including Paul Jolly an
 ## References
 
 - [CUE language](https://cuelang.org/)
-- [Meta-Reflection Club](https://future.metareflection.club/)
-  - [Syllabus](https://future.metareflection.club/syllabus.html)
-  - [Schedule](https://future.metareflection.club/schedule.html)
 - Peter Naur, [*Programming as Theory Building*](https://doi.org/10.1093/comjnl/28.3.253), *The Computer Journal*, 1985
 - Patrick Cousot and Radhia Cousot, [*Abstract Interpretation: A Unified Lattice Model for Static Analysis of Programs by Construction or Approximation of Fixpoints*](https://doi.org/10.1145/512950.512973), POPL, 1977
 - Frederick P. Brooks Jr., [*No Silver Bullet—Essence and Accident in Software Engineering*](https://doi.org/10.1109/MC.1987.1663532), *IEEE Computer*, 1987
