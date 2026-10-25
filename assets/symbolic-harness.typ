@@ -1,46 +1,40 @@
-#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
+#import "theme.typ": *
+#show: branded
 
-#let blue = rgb("#2563eb")
-#let orange = rgb("#d97706")
-#let red = rgb("#dc2626")
-#let green = rgb("#16a34a")
-#let muted = luma(100)
-#set page(width: auto, height: auto, margin: 24pt, fill: rgb("#fbfcfe"))
-#set text(font: "Helvetica", size: 13pt)
-
-#let sys(body) = text(fill: blue, body)
-#let tf = text(11pt, fill: blue)[transform / filter]
-#let edit = text(10pt, fill: orange)[edit?]
-
-#diagram(
+#chart(
   spacing: (34pt, 22pt),
-  node-stroke: 1pt,
-  node-corner-radius: 6pt,
-  node-inset: 10pt,
-  node((0, 0), align(center)[#sys[Specification] \ #text(10pt, fill: blue)[OpenAPI]], name: <a>, stroke: 1pt + blue),
-  node((0, 1), sys[System B], name: <b>, stroke: 1pt + blue),
-  node((0, 2), sys[System C], name: <c>, stroke: 1pt + blue),
-  node((2, 0), [Contracts / observations A], name: <contracts-a>),
-  node((2, 1), [Contracts / observations B], name: <contracts-b>),
-  node((2, 2), [Contracts / observations C], name: <contracts-c>),
-  node((2, 3), sys[Shared rules], name: <rules>, stroke: 1pt + blue),
-  node((2, 4), [*Validation* · deterministic], name: <validation>, stroke: none),
-  node(enclose: (<contracts-a>, <contracts-b>, <contracts-c>, <rules>, <validation>), stroke: 1.2pt, corner-radius: 10pt, inset: 10pt, name: <harness>),
-  node((2, -.62), text(11pt, weight: "bold", fill: blue)[symbolic envelope], stroke: none),
-  node((1, 0), tf, name: <transform-a>, stroke: (paint: blue, dash: "dotted"), inset: 6pt),
-  node((1, 1), tf, name: <transform-b>, stroke: (paint: blue, dash: "dotted"), inset: 6pt),
-  node((1, 2), tf, name: <transform-c>, stroke: (paint: blue, dash: "dotted"), inset: 6pt),
-  edge(<a>, <transform-a>, "-"),
-  edge(<transform-a>, <contracts-a>, "-|>"),
-  edge(<b>, <transform-b>, "-"),
-  edge(<transform-b>, <contracts-b>, "-|>"),
-  edge(<c>, <transform-c>, "-"),
-  edge(<transform-c>, <contracts-c>, "-|>"),
-  node((1, 5.2), align(center)[#text(fill: orange)[remediation loop] \ #text(11pt, fill: orange)[agent / human]], name: <remediation>, stroke: 1.2pt + orange),
-  node((3.2, 5.2), text(fill: green)[unified ✓], name: <ok>, stroke: none),
-  edge(<harness.south>, (2, 5.2), <remediation.east>, "-|>", text(11pt, fill: red)[errors], stroke: red, label-side: left),
-  edge(<harness>, <ok>, "-|>", stroke: green),
-  node(enclose: (<a>, <b>, <c>, <transform-a>, <transform-b>, <transform-c>), stroke: (paint: orange, dash: "dashed"), corner-radius: 10pt, inset: 8pt, name: <inputs>),
-  edge(<remediation>, <inputs>, "--|>", text(10pt, fill: orange)[edit? systems · transforms · specification], stroke: orange, label-side: left),
-  edge(<remediation>, <rules>, "--|>", edit, stroke: orange, label-side: right),
+  external((0, 0), stack([Specification], [OpenAPI]), name: <a>),
+  step((0, 1), [System B], name: <b>),
+  step((0, 2), [System C], name: <c>),
+  external((1, 0), stack([adapter], [spec]), name: <adapter-a>, inset: 6pt),
+  external((1, 1), stack([adapter], [typescript]), name: <adapter-b>, inset: 6pt),
+  external((1, 2), stack([adapter], [typescript]), name: <adapter-c>, inset: 6pt),
+  external-group((<a>, <b>, <c>, <adapter-a>, <adapter-b>, <adapter-c>), name: <inputs>, inset: 8pt),
+  step((2, 0), stack([observations A], [`spec.gen.cue`]), name: <obs-a>),
+  step((2, 1), stack([observations B], [`system-b.gen.cue`]), name: <obs-b>),
+  step((2, 2), stack([observations C], [`system-c.gen.cue`]), name: <obs-c>),
+  step((2, 3), stack([shared rules], [`rules.cue`]), name: <rules>),
+  focus((2, 4), active-stack([unify], [deterministic validation]), name: <unify>),
+  group((<obs-a>, <obs-b>, <obs-c>, <rules>, <unify>), name: <harness>),
+  annotation((2, -0.8), [symbolic envelope]),
+  flow(<a>, <adapter-a>, "-"),
+  flow(<adapter-a>, <obs-a>, "-|>"),
+  flow(<b>, <adapter-b>, "-"),
+  flow(<adapter-b>, <obs-b>, "-|>"),
+  flow(<c>, <adapter-c>, "-"),
+  flow(<adapter-c>, <obs-c>, "-|>"),
+  step((3.6, 4), [unified ✓], name: <ok>),
+  flow(<unify>, <ok>, "-|>", label[compatible]),
+  step((0.5, 5.4), stack([remediation], [agent / human]), name: <remediation>),
+  flow(<unify>, (2, 5.4), <remediation.east>, "-|>", label[explicit conflict], label-side: left),
+  feedback(<remediation>, <inputs>, "--|>", label[edit systems · adapters · spec], label-side: left),
+  feedback(
+    <remediation.north>,
+    (0.5, 3),
+    <rules.west>,
+    "--|>",
+    label[edit rules (governed)],
+    label-side: right,
+    label-pos: 0.75,
+  ),
 )

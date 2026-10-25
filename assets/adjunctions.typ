@@ -1,36 +1,26 @@
-#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
+#import "theme.typ": *
+#show: branded
 
-#let blue = rgb("#2563eb")
-#let teal = rgb("#0e7490")
-#let purple = rgb("#9333ea")
-#let muted = luma(100)
-#set page(width: auto, height: auto, margin: 24pt, fill: rgb("#fbfcfe"))
-#set text(font: "Helvetica", size: 13pt)
-
-#let label(text-body) = text(10pt, fill: muted, text-body)
-
-#diagram(
+#chart(
   spacing: (52pt, 32pt),
-  node-stroke: .9pt,
-  node-corner-radius: 5pt,
-  node-inset: 9pt,
-  node((3, 0), align(center)[#text(fill: blue)[CUE envelope] \ #label[`contracts/system-b.cue`]], name: <constraint>, stroke: blue),
-  node((4, 0), align(center)[#text(fill: purple)[F] \ #label[free generation]], name: <free>, stroke: purple),
-  node((5, 0), align(center)[canonical model \ #label[initial, when defined]], name: <initial>, stroke: purple),
-  node((0, 2), align(center)[existing system or \ agent proposal \ #label[`system-b/`]], name: <system>),
-  node((1, 2), align(center)[#text(fill: teal)[U] \ #label[`adapters/typescript/`]], name: <extract>, stroke: teal),
-  node((2, 2), align(center)[CUE projection \ #label[`system-b.gen.cue`]], name: <projection>, stroke: teal),
-  node((3, 2), align(center)[unify \ #label[`O & c`]], name: <unify>, shape: fletcher.shapes.diamond, stroke: blue, inset: 6pt),
-  node((4, 1), align(center)[#text(fill: purple)[gamma(`c`)] \ #label[accepted system space]], name: <concretize>, stroke: purple),
-  node((4, 2), align(center)[accepted candidate], name: <accepted>, stroke: purple),
-  edge(<constraint>, <free>, "-|>", label[optional]),
-  edge(<free>, <initial>, "-|>"),
-  edge(<system>, <extract>, "-|>"),
-  edge(<extract>, <projection>, "-|>"),
-  edge(<projection>, <unify>, "-|>"),
-  edge(<constraint>, <unify>, "-|>", label[constraint]),
-  edge(<constraint>, <concretize>, "-|>", label[concretize]),
-  edge(<unify>, <accepted>, "-|>", label[compatible]),
-  edge(<accepted>, <concretize>, "-|>", label[belongs to]),
-  edge(<unify>, (3, 3.15), (0, 3.15), <system>, "-|>", label[conflict: remediate]),
+  external((3, 0), stack([CUE envelope `c`], [`contracts/system-b.cue`]), name: <constraint>),
+  external((4, 0), stack([F], [free generation]), name: <free>),
+  external((5, 0), stack([canonical model], [initial, when defined]), name: <initial>),
+  step((0, 2), stack([existing system or agent proposal `s`], [`system-b/`]), name: <system>),
+  step((1, 2), stack([U], [`adapters/typescript/`]), name: <extract>),
+  step((2, 2), stack([CUE projection `U(s)`], [`system-b.gen.cue`]), name: <projection>),
+  decision((3, 2), stack([unify], [`U(s) & c`]), name: <unify>),
+  step((4, 1), stack([γ(`c`)], [accepted system space]), name: <concretize>),
+  annotation((5, 1), [γ(c₁ & c₂) = γ(c₁) ∩ γ(c₂)]),
+  step((4, 2), [accepted candidate], name: <accepted>),
+  relation(<constraint>, <free>, "-|>", label[optional]),
+  relation(<free>, <initial>, "-|>"),
+  flow(<system>, <extract>, "-|>", label[observe]),
+  flow(<extract>, <projection>, "-|>"),
+  flow(<projection>, <unify>, "-|>"),
+  flow(<constraint>, <unify>, "-|>", label[constraint]),
+  flow(<constraint>, <concretize>, "-|>", label[concretize]),
+  flow(<unify>, <accepted>, "-|>", label[compatible]),
+  flow(<accepted>, <concretize>, "-|>", label[belongs to]),
+  feedback(<unify>, (3, 3.15), (0, 3.15), <system>, "-|>", label[conflict: remediate]),
 )

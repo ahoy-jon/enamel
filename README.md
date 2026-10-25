@@ -44,19 +44,19 @@ A translucent interface states what it observes, what those observations mean, w
 
 ### 1. Direct dependencies make evolution brittle
 
-![Legacy workflow: systems depend directly on each other's definitions.](assets/build/composition.svg)
+![Direct model: a specification drives System B and System C directly, and tests cover only part of the relationship.](assets/build/composition.svg)
 
 In a direct model, a specification such as OpenAPI drives downstream systems. Tests capture part of the relationship, but there is no independent representation in which to evaluate the whole composition. Changing one system therefore tends to tightly constrain the others.
 
 ### 2. A symbolic envelope provides a shared boundary
 
-![Symbolic harness: systems are transformed into observations and unified with rules for deterministic validation.](assets/build/symbolic-harness.svg)
+![Symbolic envelope: adapters turn the specification and each system into CUE observations, shared rules unify them, and an explicit conflict feeds remediation.](assets/build/symbolic-harness.svg)
 
 Enamel introduces a **symbolic envelope**: adapters transform a part of each system into contracts and observations, then shared rules unify those representations. Downstream systems may evolve independently when their observations continue to satisfy the envelope. Agents work against that same boundary rather than relying on either the specification or implementation alone.
 
 ### 3. Change converges through a bounded loop
 
-![Convergence loop: observe, constrain, decide, remediate, and re-observe.](assets/build/workflow.svg)
+![Convergence loop: observe each system into CUE, compare with constraints, decide, propose a targeted change, and observe again until converged.](assets/build/workflow.svg)
 
 1. **Observe** the system through an adapter.
 2. **Compare** that observation with the intended constraints.
