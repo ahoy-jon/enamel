@@ -22,7 +22,7 @@ where:
 
 ![The roles of free generation F, deterministic extraction U, and concretization gamma in an Enamel validation loop.](../assets/build/adjunctions.svg)
 
-The labels in the diagram are illustrative: `system-b/` is an existing or proposed service, `adapters/typescript/` extracts its observed structure, `system-b.gen.cue` is the resulting projection, and `contracts/system-b.cue` contributes constraints to the envelope.
+The labels in the diagram are illustrative: `system-b/` is an existing or proposed service, `adapters/typescript/` extracts its observed structure, `system-b.gen.cue` is the resulting projection, and `contracts/system-b.cue` contributes constraints to the envelope. In the diagram, $s$ is the concrete system, $U(s)$ is its observation, and unification checks $U(s) \mathbin{\&} c$: a compatible result is an accepted candidate, a conflict sends the loop back to the system.
 
 The schema distinguishes two paths that are often conflated:
 
