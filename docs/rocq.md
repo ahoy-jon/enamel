@@ -44,4 +44,6 @@ Adding Rocq moves the trust boundary; it does not eliminate it. The important as
 
 ## Further work
 
+A first formal model of the envelope is in [`rocq/`](../rocq/): the triple adjunction, the Horn and disjunction cases, and the validation laws for CUE constraints. Its limits are summarized in [Limits of the formal model](formal-limits.md). The main one: the model validates by subsumption, while `cue vet` validates by compatibility, and the two differ when observations are partial.
+
 The next step is to formalize a small example with a stated connection between its Rocq theorem and CUE constraints. That would make the composition claim testable rather than merely architectural.

@@ -10,3 +10,11 @@ typst compile --format svg assets/symbolic-envelope.typ assets/build/symbolic-en
 typst compile --format svg assets/workflow.typ assets/build/workflow.svg
 typst compile --format svg assets/adjunctions.typ assets/build/adjunctions.svg
 """
+
+[tasks.check-rocq]
+description = "Check the Rocq model of the envelope (needs Rocq 9.x with Stdlib)"
+dir = "rocq"
+run = """
+rocq makefile -f _CoqProject -o Makefile
+make
+"""

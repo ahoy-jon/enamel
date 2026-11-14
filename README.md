@@ -134,6 +134,7 @@ Enamel is not a complete model of every system, a claim that an LLM can determin
 - [Enamel: synthesis](docs/synthesis.md): the conceptual synthesis and its relationship to knowledge bases.
 - [Adjunctions](docs/adjunctions.md): the model behind the envelope, with extraction, free generation, and concretization.
 - [Rocq integration](docs/rocq.md): combining CUE validation with proof-checked behavioral properties.
+- [Rocq model](rocq/) and [its limits](docs/formal-limits.md): a first formalization of the adjunctions and the validation law.
 - [Coinductive Repair](https://github.com/stratorys/coinductive-repair): the remediation pattern Enamel supports, validate, repair, validate again. In Enamel this loop is bounded by the envelope: a repair is accepted because the observations satisfy shared constraints, not because it removes a local error.
 
 ### Intellectual context

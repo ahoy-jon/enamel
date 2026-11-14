@@ -63,4 +63,4 @@ This does not make the system semantically complete. It makes the chosen boundar
 
 ## Scope
 
-This is a design model for Enamel, not yet a formal proof about its implementation. A full treatment would define the concrete system domain, the CUE constraint lattice, $U$, $F$, and $\gamma$, then establish the stated adjunctions for the fragments in use.
+This is a design model for Enamel, not yet a formal proof about its implementation. A full treatment would define the concrete system domain, the CUE constraint lattice, $U$, $F$, and $\gamma$, then establish the stated adjunctions for the fragments in use. A first Rocq model is in [`rocq/`](../rocq/); see [Limits of the formal model](formal-limits.md) for what it does and does not establish.
