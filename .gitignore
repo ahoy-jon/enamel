@@ -1,1 +1,9 @@
 .idea/
+rocq/Makefile
+rocq/Makefile.conf
+rocq/.Makefile.d
+rocq/*.vo
+rocq/*.vok
+rocq/*.vos
+rocq/*.glob
+rocq/.*.aux
